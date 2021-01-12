@@ -1,0 +1,48 @@
+{%extends 'base.html'%}
+
+{%block content%}
+
+    <h1>Регистрация</h1>
+    
+    <form action = '' method = 'post' novalidate>
+        {{form.hidden_tag()}}
+        
+        <p>
+        {{form.username.label}}<br>
+        {{form.username(size = 32)}}<br>
+        {%if form.username_validate()%}
+            <span style = 'color: red;'> {{form.username_validate()}} </span>
+        {%endif%}
+        </p>
+        
+        <p>
+        {{form.email.label}}<br>
+        {{form.email(size = 32)}}<br>
+        {%if form.email_validate()%}
+            <span style = 'color: red;'> {{form.email_validate()}} </span>
+        {%endif%}
+        </p>
+        
+        <p>
+        {{form.password_first.label}}<br>
+        {{form.password_first(size = 32)}}<br>
+        {%if form.password_first.errors%}
+            <span style = 'color: red;'> Введите пароль </span>
+        {%endif%}
+        </p>
+        
+        <p>
+        {{form.password_repeat.label}}<br>
+        {{form.password_repeat(size = 32)}}<br>
+        {%if form.password_repeat.errors%}
+            <span style = 'color: red;'> Пароли не совпадают </span>
+        {%endif%}
+        </p>
+        
+        <p>
+            {{form.submit()}}
+        </p>
+        
+    </form>
+    
+{%endblock%}

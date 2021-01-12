@@ -1,0 +1,27 @@
+<html>
+
+    <head>
+      <title>{{title}}</title>
+    </head>
+    
+    <body>
+        <div>
+            Начальная страница:
+            <a href = {{url_for('index')}}> Домашняя страница </a>
+            {%if current_user.is_anonymous%}
+                <a href = {{url_for('login')}}> Войти </a> 
+            {%else%}
+                <a href = '{{url_for('explorer')}}'> Посты </a>
+                <a href = '{{url_for('user_auth', user_name = current_user.username)}}'> Профиль </a>
+                <a href = '{{url_for('logout')}}'> Выйти </a> 
+            {%endif%}
+        </div>
+        
+        <hr>
+        
+        {% block content %}
+
+        {% endblock %}
+    </body>
+    
+</html>

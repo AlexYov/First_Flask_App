@@ -1,0 +1,46 @@
+{%extends 'base.html'%}
+
+{%block content%}
+
+    {%with messages = get_flashed_messages()%}
+            {%if messages%}
+                {%for message in messages%}
+                <hr>
+                <ul>
+                    <li>{{message}}</li>
+                </ul>
+                 <hr>
+                {%endfor%}
+            {%endif%}
+        {%endwith%}
+
+    <h1> Страница пользователя {{user.username}} </h1>
+    
+    <p> Количество подписчиков: {{user.followers.count()}} </p>
+    <p> Количество подписок: {{user.followed.count()}} </p>
+    
+    <hr>
+    
+    <h1> Посты пользователя {{user.username}} </h1>
+    
+    <p>
+        {%for post in posts%}
+            {%include '_post.html'%}
+        {%endfor%}
+        {%if prev_page%}
+            <a href = '{{prev_page}}'> Предыдущая страница </a>
+        {%endif%}    
+        {%if next_page%}
+            <a href = '{{next_page}}'> Следующая страница </a>
+        {%endif%}
+    </p>
+    
+    {%if user == current_user%}
+        <p> <a href = '{{url_for('edit_user_profile')}}'> Редактировать профиль </a> </p>
+    {%elif not current_user.is_following(user)%}
+        <p> <a href = '{{url_for('follow', another_username = user.username)}}'> Подписаться </p>
+    {%else%}
+        <p> <a href = '{{url_for('unfollow', another_username = user.username)}}'> Отписаться </p>
+    {%endif%}
+    
+{%endblock%}

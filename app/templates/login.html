@@ -1,0 +1,52 @@
+{%extends 'base.html'%}
+
+{%block content%}
+
+    {%with messages = get_flashed_messages()%}
+        {%if messages%}
+            {%for message in messages%}
+            <hr>
+            <ul>
+                <li>{{message}}</li>
+            </ul>
+             <hr>
+            {%endfor%}
+        {%endif%}
+    {%endwith%}
+
+    <h1>Авторизация</h1>
+    
+    <form action = '' method = 'post' novalidate>
+        {{form.hidden_tag()}}
+        <p>
+            {{form.username.label}}
+            <br>
+            {{form.username(size = 32)}}
+            {%if form.username.errors%}
+                <span style = 'color: red;'> {{'Введите логин'}} </span>
+            {%endif%}
+        </p>
+        
+        <p>
+            {{form.password.label}}
+            <br>
+            {{form.password(size = 32)}}
+            {%if form.password.errors%}
+                <span style = 'color: red;'> {{'Введите пароль'}} </span>
+            {%endif%}
+        </p>
+        
+        <p>
+            {{form.remember_me()}}
+            {{form.remember_me.label}}
+        </p>
+        
+        <p>
+            {{form.submit()}}
+        </p>
+  
+    </form>
+    
+<a href = '{{url_for('signin')}}'> Зарегистрироваться </a>
+
+{%endblock%}
