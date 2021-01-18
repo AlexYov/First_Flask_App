@@ -1,7 +1,9 @@
-from app import db, login
+from app import db, login, application
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
+from time import time
+import jwt
 
 '''Модель базы данных'''
 
@@ -12,7 +14,7 @@ followers = db.Table('followers', db.Column('follower_id', db.Integer, db.Foreig
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key = True) #это уникальный идентификатор пользователя
     username = db.Column(db.String(64), index = True, unique = True)
-    email = db.Column(db.String(120), index = True)
+    email = db.Column(db.String(120), index = True, unique = True)
     password_hash = db.Column(db.String(128))
     posts = db.relationship('Post', backref = 'author', lazy = 'dynamic')
     followed = db.relationship('User', secondary = followers, primaryjoin = (followers.c.follower_id == id), secondaryjoin = (followers.c.followed_id == id), backref = db.backref('followers', lazy = 'dynamic'), lazy = 'dynamic') 
@@ -40,7 +42,20 @@ class User(UserMixin, db.Model):
     #Сравниваем хэш с паролем, который предоставил пользователь
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)  
-
+    
+    # получаем токен безопасности для сброса пароля
+    def get_reset_password_token(self, time_token = 600):
+        return jwt.encode({'user_id' : self.id, 'finish_token' : time() + time_token}, application.config['SECRET_KEY'], algorithm = 'HS256')
+    
+    # проверка полученного токена
+    @staticmethod
+    def verify_reset_password_token(token):
+        try:
+            id = jwt.decode(token, application.config['SERCRET_KEY'], algorithms=['HS256'])['user_id']
+        except:
+            return None
+        return User.query.get(id)
+    
 # класс, отвечающий за посты/сообщения пользователей        
 class Post(db.Model):
     id_post = db.Column(db.Integer, primary_key = True)

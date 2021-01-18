@@ -75,7 +75,7 @@ class UserModelCase(unittest.TestCase): # класс тестирования ф
         f2 = user2.followed_posts().all()
         f3 = user3.followed_posts().all()
         f4 = user4.followed_posts().all() 
-        self.assertAlmostEqual(f1, [post3, post2, post1]) # проверяем, что значения равны, а именно: переменная f1 должна равняться списку значений [post2, post3, post1], так как пользователь user1 подписан на пользователей user2 и user3, значит user1 должен получить все посты тех пользователей, на которых подписан, а также получить свои собственные посты
+        self.assertEqual(f1, [post3, post2, post1]) # проверяем, что значения равны, а именно: переменная f1 должна равняться списку значений [post2, post3, post1], так как пользователь user1 подписан на пользователей user2 и user3, значит user1 должен получить все посты тех пользователей, на которых подписан, а также получить свои собственные посты
         self.assertEqual(f2, [post4, post2]) 
         self.assertEqual(f3, [post4, post3]) 
         self.assertEqual(f4, [post4])

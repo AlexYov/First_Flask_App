@@ -5,12 +5,14 @@ from email_validator import validate_email, EmailNotValidError
 from app.models import User
 from flask_login import current_user
 
+
 class LoginForm(FlaskForm):
     
     username = StringField('Имя пользователя', validators=[DataRequired()])
     password = PasswordField('Пароль', validators=[DataRequired()])
     remember_me = BooleanField('Запомнить меня')
     submit = SubmitField('Вход')
+    
     
 class RegistrationForm(FlaskForm):
     
@@ -20,19 +22,25 @@ class RegistrationForm(FlaskForm):
     password_repeat = PasswordField('Повторить пароль', validators=[DataRequired(), EqualTo('password_first')])
     submit = SubmitField('Зарегистрироваться')
 
-    def username_validate(self,):
+    def username_validate(self):
         user_username = User.query.filter_by(username = self.username.data).first()
         if user_username is not None:
             return ValidationError('Этот логин занят')
         
-    def email_validate(self,):
+    def email_validate(self):
+        user_email = User.query.filter_by(email = self.email.data).first()
+        
+        if user_email is not None:
+            return ValidationError('Почта уже используется')
+        
         try:
-            validate_email(self.email.data)
+            validate_email(self.email.data)            
         except EmailNotValidError:
             return ValidationError('Некорректная почта')
         except:
             pass        
-        
+
+ 
 class EditProfileForm(FlaskForm):
     
     username = StringField('Имя пользователя', validators=[DataRequired()])
@@ -56,6 +64,11 @@ class EditProfileForm(FlaskForm):
             return ValidationError('Этот логин занят')
         
     def email_validate(self):
+        user_email = User.query.filter_by(email = self.email.data).first()
+        
+        if user_email is not None and user_email != current_user.email:
+            return ValidationError('Почта уже используется')
+        
         try:
             validate_email(self.email.data)
         except EmailNotValidError:
@@ -63,6 +76,35 @@ class EditProfileForm(FlaskForm):
         except:
             pass
         
+        
 class PostForm(FlaskForm):
+    
     post = TextAreaField('Текст:', validators = [DataRequired(), Length(min = 1, max = 140)])
     submit = SubmitField('Отправить')
+    
+    
+class StartResetPasswordForm(FlaskForm):
+    
+    email = StringField('Почта', validators = [DataRequired()])
+    submit = SubmitField('Сбросить') 
+    
+    def email_validate(self):
+        user_email = User.query.filter_by(email = self.email.data).first()
+        
+        if user_email is None:
+            return ValidationError('Почта не найдена')
+        
+        try:
+            validate_email(self.email.data)
+        except EmailNotValidError:
+            return ValidationError('Некорректная почта')
+        except:    
+            pass
+        
+        
+class FinishResetPasswordForm(FlaskForm):
+    first_password = StringField('Пароль', validators = [DataRequired()])
+    repeat_password = StringField('Повторить пароль', validators = [DataRequired(), EqualTo('first_password')])
+    submit = SubmitField('Сохранить')
+    
+    

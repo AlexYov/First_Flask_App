@@ -2,8 +2,9 @@ from flask import render_template, flash, redirect, url_for, request
 from flask_login import current_user, login_user, logout_user, login_required
 from app.models import User, Post
 from werkzeug.urls import url_parse
-from app.forms import LoginForm, RegistrationForm, EditProfileForm, PostForm
+from app.forms import LoginForm, RegistrationForm, EditProfileForm, PostForm, StartResetPasswordForm, FinishResetPasswordForm
 from app import application, db
+from app.email import send_email
 
 
 @application.route('/', methods = ['GET','POST'])
@@ -34,19 +35,28 @@ def index():
 def login():
     
     title = 'Login'
+    
     if current_user.is_authenticated:
         return redirect(url_for('index'))
+    
     form = LoginForm()
+    
     if form.validate_on_submit():
         user = User.query.filter_by(username = form.username.data).first()
+        
         if user is None or not user.check_password(form.password.data):
             flash('Не верный логин или пароль')
             return redirect(url_for('login'))
+        
         login_user(user, remember = form.remember_me.data)
+        
         next_page = request.args.get('next')
+        
         if not next_page or url_parse(next_page).netloc != '':
             next_page = url_for('index')
+            
         return redirect(next_page)
+    
     return render_template('login.html', form = form, title = title)
 
 
@@ -61,9 +71,12 @@ def logout():
 def signin():
     
     title = 'Sign in'
+    
     if current_user.is_authenticated:
         redirect(url_for('index'))
+        
     form = RegistrationForm()
+    
     if form.validate_on_submit():
         if form.email_validate() or form.username_validate():
             pass
@@ -151,12 +164,69 @@ def unfollow(another_username):
 def explorer():
     
     title = 'Explorer'
+    
     page = request.args.get('page', 1, type = int)
+    
     posts = Post.query.order_by(Post.timestamp.desc()).paginate(page, application.config['POSTS_PER_PAGE'], False)
+    
     next_page = None
+    
     prev_page = None
+    
     if posts.has_next:
         next_page = url_for('explorer', page = posts.next_num)
+        
     if posts.has_prev:
         prev_page = url_for('explorer', page = posts.prev_num)  
+        
     return render_template('index.html', title = title, posts = posts.items, next_page = next_page, prev_page = prev_page)
+
+
+@application.route('/reset_password', methods = ['GET', 'POST'])
+def reset_password_request():
+
+    title = 'Reset password'
+    
+    if current_user.is_authenticated:
+        redirect(url_for('index')) 
+        
+    form = StartResetPasswordForm()
+    
+    if form.validate_on_submit():
+        
+        if form.email_validate():
+            pass
+        
+        else:
+            user = User.query.filter_by(email = form.email.data).first()
+            token = user.get_reset_password_token()
+            html_body = render_template('reset_password.html', user = user, token = token)
+            send_email(subject = 'Сброс пароля', sender = 'info@reset.pass', recipients = [user.email], html_body = html_body)
+            flash(f'Вам отправлено письмо на почту {user.email}')
+            return redirect(url_for('reset_password_request'))
+        
+    return render_template('start_reset_password_form.html', form = form, title = title)
+
+
+@application.route('/reset_password/<token>', methods = ['GET', 'POST'])
+def reset_password_token(token):
+    
+    title = 'Reset password'
+    
+    if current_user.is_authenticated:
+        redirect(url_for('index'))
+        
+    user_verify = User.verify_reset_password_token(token)
+    
+    if not user_verify:
+        redirect(url_for('index'))
+        
+    form = FinishResetPasswordForm()
+    
+    if form.validate_on_submit():
+        user_verify.set_password(form.first_password.data)
+        db.session.commit()
+        flash('Пароль изменён')
+        return redirect(url_for('login'))
+    
+    return render_template('finish_reset_password_form.html', form = form, title = title)
