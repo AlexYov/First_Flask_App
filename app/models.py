@@ -1,7 +1,8 @@
-from app import db, login, application
+from app import db, login
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
+from flask import current_app
 from time import time
 import jwt
 
@@ -45,16 +46,16 @@ class User(UserMixin, db.Model):
     
     # получаем токен безопасности для сброса пароля
     def get_reset_password_token(self, time_token = 600):
-        return jwt.encode({'user_id' : self.id, 'finish_token' : time() + time_token}, application.config['SECRET_KEY'], algorithm = 'HS256')
+        return jwt.encode({'user_id' : self.id, 'finish_token' : time() + time_token}, current_app.config['SECRET_KEY'], algorithm = 'HS256')
     
     # проверка полученного токена
     @staticmethod
     def verify_reset_password_token(token):
         try:
-            id = jwt.decode(token, application.config['SERCRET_KEY'], algorithms=['HS256'])['user_id']
+            user_id = jwt.decode(token, current_app.config['SERCRET_KEY'], algorithms=['HS256'])['user_id']
+            return User.query.get(user_id)
         except:
             return None
-        return User.query.get(id)
     
 # класс, отвечающий за посты/сообщения пользователей        
 class Post(db.Model):

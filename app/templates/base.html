@@ -7,13 +7,13 @@
     <body>
         <div>
             Начальная страница:
-            <a href = {{url_for('index')}}> Домашняя страница </a>
+            <a href = {{url_for('auth.index')}}> Домашняя страница </a>
             {%if current_user.is_anonymous%}
-                <a href = {{url_for('login')}}> Войти </a> 
+                <a href = {{url_for('auth.login')}}> Войти </a> 
             {%else%}
-                <a href = '{{url_for('explorer')}}'> Посты </a>
-                <a href = '{{url_for('user_auth', user_name = current_user.username)}}'> Профиль </a>
-                <a href = '{{url_for('logout')}}'> Выйти </a> 
+                <a href = '{{url_for('auth.explorer')}}'> Посты </a>
+                <a href = '{{url_for('auth.user_auth', user_name = current_user.username)}}'> Профиль </a>
+                <a href = '{{url_for('auth.logout')}}'> Выйти </a> 
             {%endif%}
         </div>
         

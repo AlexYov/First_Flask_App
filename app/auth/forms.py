@@ -64,9 +64,9 @@ class EditProfileForm(FlaskForm):
             return ValidationError('Этот логин занят')
         
     def email_validate(self):
-        user_email = User.query.filter_by(email = self.email.data).first()
-        
-        if user_email is not None and user_email != current_user.email:
+        user = User.query.filter_by(email = self.email.data).first()
+ 
+        if user is not None:
             return ValidationError('Почта уже используется')
         
         try:
@@ -103,8 +103,8 @@ class StartResetPasswordForm(FlaskForm):
         
         
 class FinishResetPasswordForm(FlaskForm):
-    first_password = StringField('Пароль', validators = [DataRequired()])
-    repeat_password = StringField('Повторить пароль', validators = [DataRequired(), EqualTo('first_password')])
+    first_password = PasswordField('Пароль', validators = [DataRequired()])
+    repeat_password = PasswordField('Повторить пароль', validators = [DataRequired(), EqualTo('first_password')])
     submit = SubmitField('Сохранить')
     
     

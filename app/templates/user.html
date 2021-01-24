@@ -36,11 +36,11 @@
     </p>
     
     {%if user == current_user%}
-        <p> <a href = '{{url_for('edit_user_profile')}}'> Редактировать профиль </a> </p>
+        <p> <a href = '{{url_for('auth.edit_user_profile')}}'> Редактировать профиль </a> </p>
     {%elif not current_user.is_following(user)%}
-        <p> <a href = '{{url_for('follow', another_username = user.username)}}'> Подписаться </p>
+        <p> <a href = '{{url_for('auth.follow', another_username = user.username)}}'> Подписаться </p>
     {%else%}
-        <p> <a href = '{{url_for('unfollow', another_username = user.username)}}'> Отписаться </p>
+        <p> <a href = '{{url_for('auth.unfollow', another_username = user.username)}}'> Отписаться </p>
     {%endif%}
     
 {%endblock%}

@@ -1,26 +1,34 @@
 import unittest
+from config_file import BaseConfig
 from datetime import datetime, timedelta
-from app import application, db
+from app import db
 from app.models import User, Post
+from app import create_app
+
+class TestConfig(BaseConfig):
+    SQLALCHEMY_DATABASE_URI = 'sqlite://'
 
 class UserModelCase(unittest.TestCase): # класс тестирования функционала программы
     def setUp(self): # метод setUp запускается перед тестированием функционала
-        application.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
-        db.create_all() # создаётся база банных (БД)
+        self.app = create_app(TestConfig)
+        self.app_context = self.app.app_context()
+        self.app_context.push()
+        db.create_all() # создаётся база банных (БД)        
         
     def tearDown(self): # метод tearDown запускается после окончания тестирования
         db.session.remove() # удаляются данные из БД
         db.drop_all() # удаляется БД
+        self.app_context.pop()
         
     def test_password_hash(self): # метод по тестированию установки пароля и проверки хэш-функции
-        user = User(username = 'sasha') # задаётся пользователь
+        user = User(username = 'user1') # задаётся пользователь
         user.set_password('1234') # устанавливается пароль пользователю
         self.assertFalse(user.check_password('4321')) # проверка хэш-функции пароля. ответ должен быть False, так как пароль не является корректным
         self.assertTrue(user.check_password('1234')) # ответ должен быть True, так как пароль является корректным
         
     def test_follow(self): # метод по тестированию функционала пользователей: подписаться, отписаться
-        user1 = User(username = 'sasha', email = 'sasha@yandex.ru') # задаётся пользователь
-        user2 = User(username = 'rita', email = 'rita@yandex.ru')
+        user1 = User(username = 'user1', email = 'user1@yandex.ru') # задаётся пользователь
+        user2 = User(username = 'user2', email = 'user2@yandex.ru')
         db.session.add_all([user1,user2]) # пользователи сохраняются в БД
         db.session.commit() # сохраняются изменения в БД
         self.assertEqual(user1.followed.all(), []) # проверка равенства двух значений: первое значение - подписки user1 (т.е. на кого подписан user1), второе значение - пустой список. так как user1 ни на кого не подписан, значит первое и второе значения равны.
@@ -33,9 +41,9 @@ class UserModelCase(unittest.TestCase): # класс тестирования ф
         self.assertTrue(user1.is_following(user2)) # проверка подписан ли user1 на user2. ответ должен быть положительный
         self.assertFalse(user2.is_following(user1)) # проверка подписан ли user2 на user1. ответ должен быть отрицательный
         self.assertEqual(user1.followed.count(), 1) # проверка количества подписак у user1. ответ должен быть 1, так как он подписан только на user2
-        self.assertEqual(user1.followed.first().username, 'rita') # проверка на кого подписан user1, т.е. user1 подписан на user2, а у user2 имя - rita, значит аргументы должны быть равны
+        self.assertEqual(user1.followed.first().username, 'user2') # проверка на кого подписан user1, т.е. user1 подписан на user2, а у user2 имя - user2, значит аргументы должны быть равны
         self.assertEqual(user2.followers.count(), 1) # проверка количества подписчиков у user2. ответ должен быть 1, так как на user2 подписан только user1
-        self.assertEqual(user2.followers.first().username, 'sasha') 
+        self.assertEqual(user2.followers.first().username, 'user1') 
         
         user1.unfollow(user2) # user1 отписывается от user2
         db.session.commit()
@@ -46,10 +54,10 @@ class UserModelCase(unittest.TestCase): # класс тестирования ф
         
     def test_follow_posts(self): #
         #добавляем пользователей в базу данных
-        user1 = User(username = 'sasha', email = 'sasha@yandex.ru')
-        user2 = User(username = 'rita', email = 'rita@yandex.ru')
-        user3 = User(username = 'slava', email = 'slava@yandex.ru')
-        user4 = User(username = 'olya', email = 'olya@yandex.ru') 
+        user1 = User(username = 'user1', email = 'user1@yandex.ru')
+        user2 = User(username = 'user2', email = 'user2@yandex.ru')
+        user3 = User(username = 'user3', email = 'user3@yandex.ru')
+        user4 = User(username = 'user4', email = 'user4@yandex.ru') 
         db.session.add_all([user1,user2,user3,user4]) 
         db.session.commit()
         
