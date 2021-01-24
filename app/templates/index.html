@@ -47,7 +47,7 @@
         <h1> Список зарегистрированных пользователей </h1>
         
         {%for user in users%}
-            <p> <a href = 'http://localhost:5000/user/{{user.username}}'> {{user.username}} </a> </p>
+            <p> <a href = 'http://localhost:5000/auth/user/{{user.username}}'> {{user.username}} </a> </p>
         {%endfor%}
         
     {%else%}
