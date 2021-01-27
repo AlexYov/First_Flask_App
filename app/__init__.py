@@ -5,9 +5,11 @@ from flask_login import LoginManager
 from flask_mail import Mail
 import logging
 from logging.handlers import SMTPHandler
+import psycopg2
 
 
 db = SQLAlchemy()
+
 login = LoginManager()
 login.login_view = 'auth.login'
 mail = Mail()
@@ -15,7 +17,8 @@ mail = Mail()
 def create_app(config_class = BaseConfig):
     
     application = Flask(__name__)
-    application.config.from_object(config_class)    
+    application.config.from_object(config_class) 
+    psycopg2.connect(config_class.DATABASE_URL, sslmode='require') 
     
     db.init_app(application)
     login.init_app(application)
