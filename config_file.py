@@ -15,6 +15,6 @@ class BaseConfig(object):
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     ADMINS = os.environ.get('ADMINS')
-    conn = psycopg2.connect(DATABASE_URL, sslmode='require') 
+    psycopg2.connect(DATABASE_URL, sslmode='require') 
 
     
