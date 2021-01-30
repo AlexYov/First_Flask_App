@@ -5,12 +5,14 @@ from flask_login import LoginManager
 from flask_mail import Mail
 import logging
 from logging.handlers import SMTPHandler
+from flask_migrate import Migrate
 
 
 db = SQLAlchemy()
 login = LoginManager()
 login.login_view = 'auth.login'
 mail = Mail()
+migrate = Migrate()
 
 def create_app(config_class = BaseConfig):
     
@@ -18,6 +20,7 @@ def create_app(config_class = BaseConfig):
     application.config.from_object(config_class) 
     
     db.init_app(application)
+    migrate.init_app(application, db)
     login.init_app(application)
     mail.init_app(application)  
 
